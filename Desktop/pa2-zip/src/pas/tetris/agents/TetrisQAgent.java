@@ -33,6 +33,7 @@ public class TetrisQAgent extends QAgent {
     private Random random;
     private HashMap<String, Double> rewards;
     private int highestScore = 0;
+    private int piecesSinceLastClear = 0;
     private List<Integer> scores = new ArrayList<>();
 
 
@@ -218,25 +219,32 @@ public class TetrisQAgent extends QAgent {
 
     private double calculateBonusRewards(GameView game) {
         double completedLines = this.rewards.getOrDefault("CompletedLines", 0.0);
-    
-        double reward;
-        switch ((int) completedLines) {
-            case 1:
-                reward = 150;
-                break;
-            case 2:
-                reward = 350;
-                break;
-            case 3:
-                reward = 800;
-                break;
-            case 4:
-                reward = 1100;
-                break;
-            default:
-                reward = 150 * completedLines;
-                break;
+        double reward = 0;
+
+        if (completedLines > 0) {
+            double efficiencyMultiplier = Math.max(0.5, 2.0 - (0.2 * piecesSinceLastClear));
+            switch ((int) completedLines) {
+                case 1:
+                    reward = 150 * efficiencyMultiplier;
+                    break;
+                case 2:
+                    reward = 350 * efficiencyMultiplier;
+                    break;
+                case 3:
+                    reward = 800 * efficiencyMultiplier;
+                    break;
+                case 4:
+                    reward = 1100 * efficiencyMultiplier;
+                    break;
+                default:
+                    reward = 150 * completedLines * efficiencyMultiplier;
+                    break;
+            }
+            piecesSinceLastClear = 0;
+        } else {
+            piecesSinceLastClear++;
         }
+        
         return reward;
     }
     
